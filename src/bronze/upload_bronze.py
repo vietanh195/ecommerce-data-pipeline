@@ -1,3 +1,5 @@
+# upload_bronze
+
 import boto3
 from pathlib import Path
 from botocore.exceptions import ClientError
@@ -16,16 +18,12 @@ try:
     print("Bucket 'bronze_layer' already exists.")
 except ClientError as e:
     print(e.response['Error']['Code'])
+    print("Bucket 'bronze_layer' created.")
+    s3.create_bucket(Bucket="bronze-layer")
 
 folder = Path("data/raw")
 files = folder.glob("*.csv")
 for file in files:
-    # s3.upload_file(
-    #     Filename = "data/raw/olist_customers_dataset.csv",
-    #     Bucket = "bronze-layer",
-    #     Key = "olist_customers_dataset.csv"
-    # )
-
     s3.upload_file(
         Filename = str(file),
         Bucket = "bronze-layer",

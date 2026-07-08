@@ -10,6 +10,7 @@ services:
       POSTGRES_DB: airflow
     volumes:
       - postgres_data:/var/lib/postgresql/data
+  
   minio:
     image: minio/minio
     container_name: minio
@@ -22,7 +23,47 @@ services:
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
+  
+  spark-master:
+    image: apache/spark:3.5.6
+    container_name: spark-master
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    environment:
+      - SPARK-MODE=master
+    volumes:
+      - ./config:/opt/bitnami/spark/conf
+  
+  spark-worker:
+    image: apache/spark:3.5.6
+    container_name: spark-worker
+    ports:
+      - "8081:8081"
+    environment:
+      - SPARK-MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=0.5G
+      - SPARK_WORKER_CORES=4
+    volumes: 
+      - ./config:/opt/bitnami/spark/conf
+    depends_on:
+      - spark-master
+  
+  jupyter:
+    image: jupyter/pyspark-notebook
+    container_name: jupyter
+    ports:
+      - "8888:8888"
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    volumes:
+      - ./notebooks:/home/jovyan/work
+    depends_on:
+      - spark-master
+      - spark-worker
 
 volumes:
   postgres_data:
   minio_data:
+  spark_master_data:
