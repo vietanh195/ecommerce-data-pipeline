@@ -67,7 +67,9 @@ services:
       - de_network
 
   jupyter:
-    image: jupyter/pyspark-notebook:latest
+    build:
+      context: .
+      dockerfile: docker/jupyter/Dockerfile
     container_name: jupyter
     ports:
       - "8888:8888"
